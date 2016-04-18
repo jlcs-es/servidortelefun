@@ -1,6 +1,8 @@
 var express = require("express");
 var cookies = require("cookie-parser");
 var body = require("body-parser");
+var cfenv = require('cfenv');
+appEnv = cfenv.getAppEnv();
 var app = express();
 
 app.use(body.json());
@@ -151,4 +153,4 @@ app.post("/conversaciones/:id/mensaje", function(req, res) {
   }
 });
 
-app.listen(3000);
+app.listen(appEnv.port || 80);
