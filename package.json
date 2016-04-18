@@ -1,0 +1,30 @@
+{
+  "name": "servidor-chat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlcs-es/servidortelefun.git"
+  },
+  "keywords": [
+    "servidor",
+    "chat",
+    "telefun"
+  ],
+  "author": "Ezequiel Santamaria Navarro ; Jose Luis Canovas Sanchez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jlcs-es/servidortelefun/issues"
+  },
+  "homepage": "https://github.com/jlcs-es/servidortelefun#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "cookie-parser": "^1.4.1",
+    "express": "^4.13.4"
+  }
+}
