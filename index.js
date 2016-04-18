@@ -83,9 +83,18 @@ app.get("/usuarios/:usuario", function(req, res) {
 
 app.get("/usuarios/:usuario/token", function(req, res) {
   var us = req.params.usuario;
-  res
-    .cookie("token", usuarios[us].ultimoToken)
-    .send("Ok");
+  var pass = req.query.password;
+  var usuario = usuarios[us];
+
+  if (!usuario || usuario.password !== pass) {
+    res
+      .status(404)
+      .send("Bad password-user pair.")
+  } else {
+    res
+      .cookie("token", usuarios[us].ultimoToken)
+      .send("Ok");
+  }
 });
 
 app.get("/conversaciones", function(req, res) {
