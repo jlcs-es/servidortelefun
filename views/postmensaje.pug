@@ -1,0 +1,19 @@
+html
+  head
+    title= title
+    script(src="/js/jquery/jquery.min.js")
+  body
+    h1= message
+  form(method="post" enctype="text/plain")
+    input#text(type="text")
+    input#submit(type="submit" value="enviar mensaje")
+  script(type='text/javascript').
+    $("#submit").on("click", function(e) {
+    e.preventDefault();
+    $.ajax({
+      type: "POST",
+      data: $("#text").val(),
+      contentType: "text/plain",
+      dataType: "text"
+      });
+    });

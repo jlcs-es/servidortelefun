@@ -5,9 +5,11 @@ var cfenv = require('cfenv');
 appEnv = cfenv.getAppEnv();
 var app = express();
 
-app.use(body.json());
+app.set('view engine', 'pug');
 app.use(body.text());
+app.use(body.json());
 app.use(cookies());
+app.use('/js/jquery', express.static('node_modules/jquery/dist'));
 
 var usuarios = {
   "joseluis": {
@@ -153,4 +155,25 @@ app.post("/conversaciones/:id/mensaje", function(req, res) {
   }
 });
 
-app.listen(appEnv.port || 80);
+app.get("/conversaciones/:id/mensaje", function(req, res) {
+  var id = req.params.id;
+  var token = req.cookies.token;
+  var us = tokens[token];
+  var conversacion = conversaciones[id];
+
+  if (!conversacion) {
+    res.status(404).send("Not found your meme");
+  } else {
+    if (token && us && ParticipantesEnConversacion(us, conversacion)) {
+      res.render("postmensaje", {title: "Enviar mensaje", message: "Escribe aquí el mensaje"});
+    } else {
+      res.status(401).send("You are not authorized to see this meme")
+    }
+  }
+})
+
+app.listen(appEnv.port, '0.0.0.0', function() {
+
+	// print a message when the server starts listening
+  console.log("server starting on " + appEnv.url);
+});
