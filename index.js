@@ -115,6 +115,10 @@ app.get("/usuarios/:usuario/token", function(req, res) {
         v = c == 'x' ? r : r & 0x3 | 0x8;
       return v.toString(16);
     });
+    var oldtoken = Object.keys(tokens).filter(function(key) {return tokens[key] === us})[0];
+    delete tokens[oldtoken];
+    tokens[usuarios[us].ultimoToken] = us;
+    console.log(tokens);
     res
       .cookie("token", usuarios[us].ultimoToken)
       .send("Ok");
