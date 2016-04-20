@@ -66,6 +66,7 @@ app.get("/", function(req, res) {
     "get  /conversaciones<br>" +
     "get  /conversaciones/:id<br>" +
     "post /conversaciones/:id/mensaje<br>" +
+    "post /usuarios/:usuario/<br>" +
     "");
 });
 
@@ -85,6 +86,20 @@ app.get("/usuarios/:usuario", function(req, res) {
   }
 });
 
+app.post("/usuarios/:usuario", function(req, res) {
+  var us = req.params.usuario;
+  var token = req.cookies.token;
+  var usuario = req.body;
+
+  if (us in usuarios) {
+    res.status(400).send("Meme " + login + " already memed.");
+  } else {
+    usuarios[us] = usuario;
+    usuarios[us].login = us;
+    res.send("Ok");
+  }
+});
+
 app.get("/usuarios/:usuario/token", function(req, res) {
   var us = req.params.usuario;
   var pass = req.query.password;
@@ -95,6 +110,11 @@ app.get("/usuarios/:usuario/token", function(req, res) {
       .status(404)
       .send("Bad password-user pair.")
   } else {
+    usuarios[us].ultimoToken = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : r & 0x3 | 0x8;
+      return v.toString(16);
+    });
     res
       .cookie("token", usuarios[us].ultimoToken)
       .send("Ok");
@@ -165,7 +185,10 @@ app.get("/conversaciones/:id/mensaje", function(req, res) {
     res.status(404).send("Not found your meme");
   } else {
     if (token && us && ParticipantesEnConversacion(us, conversacion)) {
-      res.render("postmensaje", {title: "Enviar mensaje", message: "Escribe aquí el mensaje"});
+      res.render("postmensaje", {
+        title: "Enviar mensaje",
+        message: "Escribe aquí el mensaje"
+      });
     } else {
       res.status(401).send("You are not authorized to see this meme")
     }
@@ -174,6 +197,6 @@ app.get("/conversaciones/:id/mensaje", function(req, res) {
 
 app.listen(appEnv.port, '0.0.0.0', function() {
 
-	// print a message when the server starts listening
+  // print a message when the server starts listening
   console.log("server starting on " + appEnv.url);
 });
