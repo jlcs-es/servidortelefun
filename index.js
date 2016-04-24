@@ -16,13 +16,19 @@ var usuarios = {
     login: "joseluis",
     password: "plisu",
     nombre: "José Luis",
-    ultimoToken: "token1"
+    ultimoToken: "token1",
+    contactos: [
+      "ezequiel"
+    ]
   },
   "ezequiel": {
     login: "ezequiel",
     password: "memelord",
     nombre: "Ezequiel",
-    ultimoToken: "token2"
+    ultimoToken: "token2",
+    contactos: [
+      "joseluis"
+    ]
   }
 }
 
@@ -46,8 +52,7 @@ var conversaciones = [{
 }];
 
 var tokens = {
-  "token1": "joseluis",
-  "token2": "ezequiel"
+
 }
 
 function ParticipantesEnConversacion(participante, conversacion) {
@@ -59,12 +64,22 @@ function ParticipantesEnConversacion(participante, conversacion) {
   return false;
 }
 
+function partialClone(object) {
+  var keys = Array.prototype.slice.call(arguments, 1);
+  var res = {};
+  for (var i = 0; i < keys.length; i++) {
+    res[keys[i]] = object[keys[i]];
+  }
+  return res;
+}
+
 app.get("/", function(req, res) {
   res.send(
     "get  /usuarios/:usuario<br>" +
     "get  /usuarios/:usuario/token<br>" +
     "get  /conversaciones<br>" +
     "get  /conversaciones/:id<br>" +
+    "get /contactos<br>" +
     "post /conversaciones/:id/mensaje<br>" +
     "post /usuarios/:usuario/<br>" +
     "");
@@ -73,15 +88,16 @@ app.get("/", function(req, res) {
 app.get("/usuarios/:usuario", function(req, res) {
   var us = req.params.usuario;
   var token = req.cookies.token;
+  var usuario = tokens[token];
 
-  if (!(us in usuarios)) {
-    res.status(404).send("Meme " + us + " not found.");
+  if (!usuario) {
+    res.status(401).send("Meme not authorized");
   } else {
-    var usuario = usuarios[us];
-    if (token !== usuario.ultimoToken) {
-      res.status(401).send("Meme not authorized");
-    } else {
-      res.send("Hola " + usuario.nombre);
+    usuario = usuarios[usuario];
+    console.log(usuario);
+    if (usuario.contactos.indexOf(us) > -1 || us === usuario.login) {
+      var objUs = partialClone(usuarios[us], "login", "nombre");
+      res.send(JSON.stringify(objUs));
     }
   }
 });
@@ -124,6 +140,24 @@ app.get("/usuarios/:usuario/token", function(req, res) {
       .send("Ok");
   }
 });
+
+app.get("/contactos", function(req, res) {
+  var us = req.params.usuario;
+  var token = req.cookies.token;
+  var us = tokens[token];
+
+  if (!(us in usuarios)) {
+    if (!us) {
+      res.status(401).send("Meme not authorized");
+    } else {
+      res.status(404).send("Meme " + us + " not found.");
+    }
+  } else {
+    var usuario = usuarios[us];
+    res.send(JSON.stringify(usuario.contactos));
+  }
+});
+
 
 app.get("/conversaciones", function(req, res) {
   var token = req.cookies.token;
