@@ -79,7 +79,7 @@ app.get("/", function(req, res) {
     "get  /usuarios/:usuario/token<br>" +
     "get  /conversaciones<br>" +
     "get  /conversaciones/:id<br>" +
-    "get /contactos<br>" +
+    "get  /contactos<br>" +
     "post /conversaciones/:id/mensaje<br>" +
     "post /usuarios/:usuario/<br>" +
     "");
@@ -94,7 +94,6 @@ app.get("/usuarios/:usuario", function(req, res) {
     res.status(401).send("Meme not authorized");
   } else {
     usuario = usuarios[usuario];
-    console.log(usuario);
     if (usuario.contactos.indexOf(us) > -1 || us === usuario.login) {
       var objUs = partialClone(usuarios[us], "login", "nombre");
       res.send(JSON.stringify(objUs));
@@ -177,6 +176,7 @@ app.get("/conversaciones", function(req, res) {
 app.get("/conversaciones/:id", function(req, res) {
   var id = req.params.id;
   var token = req.cookies.token;
+  var pag = req.query.n;
   var us = tokens[token];
 
   var conversacion = conversaciones[id];
@@ -184,7 +184,13 @@ app.get("/conversaciones/:id", function(req, res) {
     res.status(404).send("Not found your meme");
   } else {
     if (token && us && ParticipantesEnConversacion(us, conversacion)) {
-      res.send(JSON.stringify(conversacion));
+      if (pag) {
+        var obj = partialClone(conversacion, "id", "mensajes", "participantes");
+        obj.mensajes = obj.mensajes.slice(pag);
+        res.send(JSON.stringify(obj));
+      } else {
+        res.send(JSON.stringify(conversacion));
+      }
     } else {
       res.status(401).send("You are not authorized to see this meme")
     }
