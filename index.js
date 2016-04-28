@@ -17,18 +17,16 @@ var usuarios = {
     password: "plisu",
     nombre: "José Luis",
     ultimoToken: "token1",
-    contactos: [
-      "ezequiel"
-    ]
+    contactos: [],
+    esperas: []
   },
   "ezequiel": {
     login: "ezequiel",
     password: "memelord",
     nombre: "Ezequiel",
     ultimoToken: "token2",
-    contactos: [
-      "joseluis"
-    ]
+    contactos: [],
+    esperas: ["joseluis"]
   }
 }
 
@@ -80,6 +78,7 @@ app.get("/", function(req, res) {
     "get  /conversaciones<br>" +
     "get  /conversaciones/:id<br>" +
     "get  /contactos<br>" +
+    "post /conversaciones<br>" +
     "post /conversaciones/:id/mensaje<br>" +
     "post /usuarios/:usuario/<br>" +
     "");
@@ -96,7 +95,7 @@ app.get("/usuarios/:usuario", function(req, res) {
     usuario = usuarios[usuario];
     if (usuario.contactos.indexOf(us) > -1 || us === usuario.login) {
       var objUs = partialClone(usuarios[us], "login", "nombre");
-      res.send(JSON.stringify(objUs));
+      res.status(200).send(JSON.stringify(objUs));
     }
   }
 });
@@ -111,7 +110,9 @@ app.post("/usuarios/:usuario", function(req, res) {
   } else {
     usuarios[us] = usuario;
     usuarios[us].login = us;
-    res.send("Ok");
+    res.status(200).send(JSON.stringify({
+      status: "ok"
+    }));
   }
 });
 
@@ -130,7 +131,9 @@ app.get("/usuarios/:usuario/token", function(req, res) {
         v = c == 'x' ? r : r & 0x3 | 0x8;
       return v.toString(16);
     });
-    var oldtoken = Object.keys(tokens).filter(function(key) {return tokens[key] === us})[0];
+    var oldtoken = Object.keys(tokens).filter(function(key) {
+      return tokens[key] === us
+    })[0];
     delete tokens[oldtoken];
     tokens[usuarios[us].ultimoToken] = us;
     console.log(tokens);
@@ -141,7 +144,6 @@ app.get("/usuarios/:usuario/token", function(req, res) {
 });
 
 app.get("/contactos", function(req, res) {
-  var us = req.params.usuario;
   var token = req.cookies.token;
   var us = tokens[token];
 
@@ -153,7 +155,42 @@ app.get("/contactos", function(req, res) {
     }
   } else {
     var usuario = usuarios[us];
-    res.send(JSON.stringify(usuario.contactos));
+    var obj = partialClone(usuario, "contactos", "esperas");
+    res.status(200).send(JSON.stringify(obj));
+  }
+});
+
+app.post("/contactos", function(req, res) {
+  var token = req.cookies.token;
+  var json = req.body;
+
+  if (token in tokens) {
+    var usuario = usuarios[tokens[token]];
+    if (json && json.contacto) {
+      var c = json.contacto;
+      if (usuario.contactos.indexOf(c) != -1 || usuario.esperas.indexOf(c) != -1) {
+        res.status(304).send("Meme not modified");
+      } else {
+        if (c in usuarios) {
+          var cu = usuarios[c];
+          var it;
+          if ((it = cu.esperas.indexOf(usuario.login)) != -1) {
+            cu.esperas.splice(it, it + 1);
+            cu.contactos.push(usuario.login);
+            usuario.contactos.push(c);
+          } else {
+            usuario.esperas.push(c);
+          }
+          res.status(200).send("{\"status\": \"ok\"}")
+        } else {
+          res.status(400).send("Bad meme");
+        }
+      }
+    } else {
+      res.status(400).send("Bad meme");
+    }
+  } else {
+    res.status(400).send("Bad meme");
   }
 });
 
@@ -167,7 +204,36 @@ app.get("/conversaciones", function(req, res) {
     }).map(function(v) {
       return v.id;
     });
-    res.send(JSON.stringify(arr));
+    res.status(200).send(JSON.stringify(arr));
+  } else {
+    res.status(401).send("Meme not authorized");
+  }
+});
+
+app.post("/conversaciones", function(req, res) {
+  var token = req.cookies.token;
+  var conversacion = req.body;
+  if (token in tokens) {
+    var usuario = usuarios[tokens[token]];
+    if (conversacion.participantes && conversacion.participantes.length > 0) {
+      for (var i = 0; i < conversacion.participantes.length; i++) {
+        if (usuario.contactos.indexOf(conversacion.participantes[i]) === -1) {
+          res.status(403).send("Meme not authorized");
+          return;
+        }
+      }
+      var conv = {
+        participantes: conversacion.participantes,
+        mensajes: []
+      };
+      conv.participantes.push(usuario.login);
+      conv.id = conversaciones.push(conv) - 1;
+      res.status(200).send(JSON.stringify({
+        id: conv.id
+      }));
+    } else {
+      res.status(400).send("Bad request");
+    }
   } else {
     res.status(401).send("Meme not authorized");
   }
@@ -187,9 +253,9 @@ app.get("/conversaciones/:id", function(req, res) {
       if (pag) {
         var obj = partialClone(conversacion, "id", "mensajes", "participantes");
         obj.mensajes = obj.mensajes.slice(pag);
-        res.send(JSON.stringify(obj));
+        res.status(200).send(JSON.stringify(obj));
       } else {
-        res.send(JSON.stringify(conversacion));
+        res.status(200).send(JSON.stringify(conversacion));
       }
     } else {
       res.status(401).send("You are not authorized to see this meme")
@@ -212,7 +278,9 @@ app.post("/conversaciones/:id/mensaje", function(req, res) {
         creador: us,
         contenido: mensaje
       });
-      res.send("Ok");
+      res.status(200).send(JSON.stringify({
+        status: "ok"
+      }));
     } else {
       res.status(401).send("You are not authorized to see this meme")
     }
