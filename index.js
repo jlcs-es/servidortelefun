@@ -204,7 +204,7 @@ app.get("/conversaciones", function(req, res) {
     }).map(function(v) {
       return v.id;
     });
-    res.status(200).send(JSON.stringify(arr));
+    res.status(200).send(JSON.stringify({conversaciones: arr}));
   } else {
     res.status(401).send("Meme not authorized");
   }
