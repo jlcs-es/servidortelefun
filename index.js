@@ -273,10 +273,14 @@ app.post("/conversaciones/:id/mensaje", function(req, res) {
   if (!conversacion) {
     res.status(404).send("Not found your meme");
   } else {
+    if (!mensaje || typeof mensaje.mensaje !== "string") {
+      res.status(400).send("Bad meme");
+      return;
+    }
     if (token && us && ParticipantesEnConversacion(us, conversacion)) {
       conversacion.mensajes.push({
         creador: us,
-        contenido: mensaje
+        contenido: mensaje.mensaje
       });
       res.status(200).send(JSON.stringify({
         status: "ok"

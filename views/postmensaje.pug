@@ -4,7 +4,7 @@ html
     script(src="/js/jquery/jquery.min.js")
   body
     h1= message
-  form(method="post" enctype="text/plain")
+  form(method="post" enctype="application/json")
     input#text(type="text")
     input#submit(type="submit" value="enviar mensaje")
   script(type='text/javascript').
@@ -12,8 +12,8 @@ html
     e.preventDefault();
     $.ajax({
       type: "POST",
-      data: $("#text").val(),
-      contentType: "text/plain",
-      dataType: "text"
+      data: JSON.stringify({mensaje: $("#text").val()}),
+      contentType: "application/json",
+      dataType: "json"
       });
     });
