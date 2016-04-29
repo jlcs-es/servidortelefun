@@ -83,6 +83,8 @@ app.get("/usuarios/:usuario", function(req, res) {
     if (usuario.contactos.indexOf(us) > -1 || us === usuario.login) {
       var objUs = partialClone(usuarios[us], "login", "nombre");
       res.status(200).send(JSON.stringify(objUs));
+    } else {
+      res.status(403).send("Meme forbidden");
     }
   }
 });
@@ -93,7 +95,7 @@ app.post("/usuarios/:usuario", function(req, res) {
   var usuario = req.body;
 
   if (us in usuarios) {
-    res.status(400).send("Meme " + login + " already memed.");
+    res.status(400).send("Meme " + us + " already memed.");
   } else {
     usuarios[us] = usuario;
     usuarios[us].login = us;
