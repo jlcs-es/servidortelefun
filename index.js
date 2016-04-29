@@ -34,19 +34,6 @@ var conversaciones = [{
   id: 0,
   participantes: [],
   mensajes: []
-}, {
-  id: 1,
-  participantes: ["joseluis", "ezequiel"],
-  mensajes: [{
-    creador: "joseluis",
-    contenido: "hola"
-  }, {
-    creador: "ezequiel",
-    contenido: "hola pepelu"
-  }, {
-    creador: "joseluis",
-    contenido: "..."
-  }]
 }];
 
 var tokens = {
